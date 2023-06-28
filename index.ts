@@ -9,40 +9,50 @@ const main = async () => {
     throw new Error("No private key found");
   }
   try {
-    const sdk = ThirdwebSDK.fromPrivateKey(
-      process.env.PRIVATE_KEY as string,
-      "goerli"
-    );
+    const sdk = new ThirdwebSDK("mumbai");
+    const contract = await sdk.getContract("0x8dD6556DCC4aB77bB9fe3D19523b4e14BD92Dd17");
+    
+    const metadata = {
+      name: "SOOKJAI NFT by Amazing Thailand #1",
+      attributes: [
+          {
+              "trait_type": "HEAD",
+              "value": "Sports Hair Band YL"
+          },
+          {
+              "trait_type": "EMOTION",
+              "value": "Angry"
+          },
+          {
+              "trait_type": "FACE",
+              "value": "Lollipop RD"
+          },
+          {
+              "trait_type": "TOP",
+              "value": "Rain Coat GR"
+          },
+          {
+              "trait_type": "BODY",
+              "value": "Portable Fan NV"
+          },
+          {
+              "trait_type": "BACK",
+              "value": "Ukulele Wood"
+          },
+          {
+              "trait_type": "BACKGROUND",
+              "value": "Purple"
+          }
+      ],
+      image: readFileSync("assets/STTAT_00001.png"), // This can be an image url or file
+    };
 
-    const contractAddress = await sdk.deployer.deployNFTDrop({
-      name: "My Drop",
-      primary_sale_recipient: "0x39Ab29fAfb5ad19e96CFB1E1c492083492DB89d4",
-    });
+    const tx = await contract.erc721.mint(metadata);
+    const receipt = tx.receipt; // the transaction receipt
+    const tokenId = tx.id; // the id of the NFT minted
+    const nft = await tx.data(); // (optional) fetch details of minted NFT
 
-    console.log("Contract address: ", contractAddress);
-
-    const contract = await sdk.getContract(contractAddress, "nft-drop");
-
-    const metadatas = [
-      {
-        name: "Blue Star",
-        description: "A blue star NFT",
-        image: readFileSync("assets/blue-star.png"),
-      },
-      {
-        name: "Red Star",
-        description: "A red star NFT",
-        image: readFileSync("assets/red-star.png"),
-      },
-      {
-        name: "Yellow Star",
-        description: "A yellow star NFT",
-        image: readFileSync("assets/yellow-star.png"),
-      },
-    ];
-
-    await contract.createBatch(metadatas);
-    console.log("Created batch successfully!");
+    console.log("Created batch successfully!\n", "recipt", receipt, "tokenId", tokenId, "nft", nft);
   } catch (e) {
     console.error("Something went wrong: ", e);
   }
